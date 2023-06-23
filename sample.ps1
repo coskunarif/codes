@@ -6,7 +6,6 @@ foreach ($process in $processes)
 
     if ($cpuUsage -gt 50)
     {
-        # If so, print the process name and its CPU usage
         Write-Host ("Process: " + $process.Name + ", CPU Usage: " + $cpuUsage + "%")
     }
 }
