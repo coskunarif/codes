@@ -1,12 +1,28 @@
-function Get-Instance([string]$version) {
-    $hostname = [System.NET.DNS]::GetHostByName($null).HostName
-    $instance = (Get-WmiObject -namespace root\Microsoft\SqlServer\ReportServer  -class __Namespace -ComputerName $hostname | select Name).Name
-    $namespaceAdminPath = "root\Microsoft\SqlServer\ReportServer\$instance\v$version"
-    return Get-WmiObject -namespace $namespaceAdminPath -class MSReportServer_Instance -ComputerName $hostname 
+# Set the local folder path where the PDF files are stored
+$folderPath = "C:\temp\test"
+
+# Initialize variables for storing the corrupted file names and count
+$corruptedFileNames = @()
+$corruptedFileCount = 0
+
+# Get a list of all PDF files in the folder
+$pdfFiles = Get-ChildItem -Path $folderPath -Filter "*.pdf"
+
+# Loop through each PDF file
+foreach ($pdfFile in $pdfFiles) {
+  # Try to read the PDF file using the Adobe PDF library
+  Try {
+    $pdfDocument = New-Object -ComObject AcroExch.PDDoc
+    $pdfDocument.Open($pdfFile.FullName)
+  }
+  Catch {
+    # If the PDF file is corrupted, add its name to the list of corrupted files
+    # and increment the count
+    $corruptedFileNames += $pdfFile.Name
+    $corruptedFileCount++
+  }
 }
-function Get-ConfigSet([string]$version) {
-    $hostname = [System.NET.DNS]::GetHostByName($null).HostName
-    $instance = (Get-WmiObject -namespace root\Microsoft\SqlServer\ReportServer  -class __Namespace -ComputerName $hostname | select Name).Name
-    $namespaceAdminPath = "root\Microsoft\SqlServer\ReportServer\$instance\v$version\Admin"
-    return Get-WmiObject -namespace $namespaceAdminPath -class MSReportServer_ConfigurationSetting -ComputerName $hostname 
-}
+
+# Output the names of the corrupted files and the total count
+Write-Output "Corrupted files: $corruptedFileNames"
+Write-Output "Total count: $corruptedFileCount"
